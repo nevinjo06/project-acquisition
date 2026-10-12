@@ -284,6 +284,15 @@ make credit use exceed the final number of drafts.
 If `APOLLO2_API_KEY` is also set, the client switches to it for the rest of the
 run once `APOLLO_API_KEY` returns "insufficient credits".
 
+When Apollo can't reveal emails at all, `HUNTER_API_KEY` (Hunter.io) takes
+over where it can (see [src/sourcing/hunter.py](src/sourcing/hunter.py)):
+Alumni tab rows go through Hunter's Email Finder, and the remaining slots are
+filled from `config/enterprise_targets.yaml` via Domain Search. Hunter can't
+look up Apollo discovery leads, because Apollo's search hides their last
+names. Each run spends only its share of the credits left in Hunter's billing
+cycle (capped by `HUNTER_MAX_CREDITS_PER_RUN`), and emails below
+`HUNTER_MIN_SCORE` (default 70) are skipped to protect the bounce rate.
+
 Apollo does not identify UIUC alumni by school. See [Who we email](#who-we-email)
 and [config/search_profiles.yaml](config/search_profiles.yaml) for targeting.
 Without an Apollo key, preparation uses Sheet sources with existing emails;
@@ -423,6 +432,7 @@ changed by this documentation update.
 |---|---|
 | `APOLLO_API_KEY` | Organization's Apollo key |
 | `APOLLO2_API_KEY` | Optional fallback Apollo key, used once the first is out of credits |
+| `HUNTER_API_KEY` | Optional Hunter.io key, used when Apollo can't reveal emails |
 | `GEMINI_API_KEY` | Organization's Gemini key |
 | `GOOGLE_SERVICE_ACCOUNT_JSON` | Service-account JSON for Sheets |
 | `SHEET_ID` | Outreach workbook ID |

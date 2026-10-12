@@ -51,7 +51,8 @@ from .sourcing.apollo import (
     ApolloClient, ApolloRevealError, Candidate, bulk_reveal, candidate_from_contact, configured_api_keys, load_profiles,
     enterprise_profiles, pick_profiles_for_today, search_fresh_candidates,
 )
-from .sourcing.enterprise import enterprise_candidates
+from .sourcing.enterprise import enterprise_candidates, load_targets
+from .sourcing.hunter import HunterClient
 from .sourcing.cube_alumni import fetch_alumni_leads
 from .summary import send_daily_summary
 from .template import TemplateRouter
@@ -134,8 +135,10 @@ class _Selector:
     """
 
     def __init__(self, *, apollo, sheets, scorer, known, suppression, contacted, budget,
-                 companies=None):
+                 companies=None, hunter=None):
         self.apollo = apollo
+        # Fallback for people Apollo can't reveal (see sourcing/hunter.py).
+        self.hunter = hunter
         self.sheets = sheets
         self.scorer = scorer
         self.known = known
@@ -217,16 +220,25 @@ class _Selector:
             if key:
                 batch_seen.add(key)
             to_reveal.append(it)
-        if not to_reveal or self.apollo is None or self.reveal_failed:
+        if not to_reveal:
             return
+        results: list[Lead | None] = []
+        if self.apollo is not None and not self.reveal_failed:
+            self._apollo_reveal(to_reveal, results)
+        if self.hunter is not None:
+            self._hunter_reveal(to_reveal[len(results):])
+
+    def _apollo_reveal(self, to_reveal: list[Candidate], results: list) -> None:
         try:
-            results = bulk_reveal(self.apollo, to_reveal)
+            found = bulk_reveal(self.apollo, to_reveal)
         except ApolloRevealError as exc:
             # Leave the unresolved people alone: marking them NOT_FOUND would
             # skip them forever over what was an account problem, not a miss.
             log.error("Apollo email lookup failed; no more lookups this run: %s", exc)
             self.reveal_failed = True
-            results = exc.done
+            results.extend(exc.done)
+        else:
+            results.extend(found)
         for cand, lead in zip(to_reveal, results):
             self.revealed[id(cand)] = lead
             self.reveals_found += 1 if lead else 0
@@ -242,6 +254,33 @@ class _Selector:
                 except Exception as exc:
                     log.warning("Alumni write-back failed for row %s: %s", cand.ref, exc)
         self.reveals += len(results)
+
+    def _hunter_reveal(self, cands: list[Candidate]) -> None:
+        """Hunter needs a full name; Apollo discovery hits only carry a masked
+        last name, so in practice this covers the Alumni tab. Misses are free
+        and are NOT written back as NOT_FOUND: Apollo may still find them."""
+        for cand in cands:
+            first, last = cand.person.get("first_name"), cand.person.get("last_name")
+            if not (first and last) and not cand.linkedin:
+                continue
+            email = self.hunter.find_email(first or "", last or "", cand.company, cand.linkedin)
+            if not email:
+                continue
+            try:
+                lead = Lead(
+                    name=cand.name, title=cand.title, company=cand.company, email=email,
+                    linkedin=cand.linkedin, industry=cand.industry, location=cand.location,
+                    is_uiuc_alum=cand.is_uiuc_alum, is_cube_member=cand.is_cube_member,
+                    source=cand.source, date_added=datetime.now(timezone.utc),
+                )
+            except ValueError:
+                continue  # Hunter returned something EmailStr rejects
+            self.revealed[id(cand)] = lead
+            if cand.ref is not None:
+                try:
+                    self.sheets.set_alumni_email(cand.ref, email)
+                except Exception as exc:
+                    log.warning("Alumni write-back failed for row %s: %s", cand.ref, exc)
 
 
 # ---------------- prepare ----------------
@@ -292,6 +331,10 @@ def cmd_prepare(dry_run: bool, force: bool = False) -> int:
     #    tab (looked up by name+company / LinkedIn) and from Apollo discovery. We
     #    only spend a credit on the ones we actually select (step 3).
     apollo: ApolloClient | None = ApolloClient() if (not dry_run and configured_api_keys()) else None
+    hunter: HunterClient | None = (
+        HunterClient(max_credits=env_int("HUNTER_MAX_CREDITS_PER_RUN", target))
+        if (not dry_run and env_str("HUNTER_API_KEY", "")) else None
+    )
     sheet_leads: list[Lead] = []
     candidates: list[Candidate] = []
     profiles_used: list[str] = []  # today's Apollo discovery profiles, for the Runs log
@@ -309,7 +352,7 @@ def cmd_prepare(dry_run: bool, force: bool = False) -> int:
         # looked up via Apollo. All are flagged alumni and rank first.
         alum_leads, alum_contacts = sheets.fetch_alumni_targets()
         sheet_leads.extend(alum_leads)
-        if alum_contacts and apollo:
+        if alum_contacts and (apollo or hunter):
             for c in alum_contacts:
                 ref = c.pop("_row", None)
                 candidates.append(
@@ -441,7 +484,7 @@ def cmd_prepare(dry_run: bool, force: bool = False) -> int:
     selector = _Selector(
         apollo=apollo, sheets=sheets, scorer=scorer, known=known,
         suppression=suppression, contacted=contacted, budget=_reveal_budget(target),
-        companies=companies,
+        companies=companies, hunter=hunter,
     )
     # Whichever pool runs short hands its unused slots to the other, so a thin
     # alumni bench never costs us total volume.
@@ -458,6 +501,16 @@ def cmd_prepare(dry_run: bool, force: bool = False) -> int:
         enterprise_picked += selector.take(enterprise_queue, short())
     if short() > 0:
         alumni_picked += selector.take(alumni_queue, short())
+    # Apollo couldn't reveal emails (no credits, or a plan without the API):
+    # fill what's left from the big-company list via Hunter's Domain Search,
+    # which returns people and their emails together.
+    if short() > 0 and hunter is not None and (apollo is None or selector.reveal_failed):
+        extra = hunter.enterprise_leads(
+            load_targets(), companies, datetime.now(timezone.utc).timetuple().tm_yday, short(),
+        )
+        for lead in extra:
+            lead.score = scorer.score(lead, past_kw)
+        enterprise_picked += selector.take(extra, short())
     top: list[Lead] = alumni_picked + enterprise_picked + discovery_picked
     reveals, reveals_found = selector.reveals, selector.reveals_found
     alumni_attempted, alumni_found = selector.alumni_attempted, selector.alumni_found
@@ -469,6 +522,8 @@ def cmd_prepare(dry_run: bool, force: bool = False) -> int:
         len(enterprise_picked), enterprise_slots,
         len(discovery_picked), discovery_slots, reveals,
     )
+    if hunter is not None:
+        log.info("Hunter: %d emails found, %d credits used", hunter.found, hunter.credits_used)
 
     sender_name, sender_phone = _sender_identity()
 
