@@ -55,17 +55,54 @@ def _is_uiuc(schools: Iterable[str]) -> bool:
     return False
 
 
+# Tried in order: when the current key's account runs out of credits, the client
+# switches to the next one for the rest of the run.
+API_KEY_ENVS = ("APOLLO_API_KEY", "APOLLO2_API_KEY")
+
+
+def configured_api_keys() -> list[tuple[str, str]]:
+    """(env var name, key) for each Apollo key that is actually set. Stripped so
+    a missing GitHub secret (exported as "") counts as unset."""
+    keys = [(n, os.environ.get(n, "").strip()) for n in API_KEY_ENVS]
+    return [(n, k) for n, k in keys if k]
+
+
+def _out_of_credits(r: requests.Response) -> bool:
+    # Apollo reports an exhausted plan as 422 "insufficient credits" (sometimes 402).
+    return r.status_code == 402 or (r.status_code == 422 and "credit" in r.text.lower())
+
+
 class ApolloClient:
     def __init__(self, api_key: str | None = None) -> None:
-        self.api_key = api_key or os.environ["APOLLO_API_KEY"]
+        self.api_keys = [("api_key", api_key)] if api_key else configured_api_keys()
+        if not self.api_keys:
+            raise KeyError("APOLLO_API_KEY")
         self.session = requests.Session()
         self.session.headers.update(
             {
                 "Cache-Control": "no-cache",
                 "Content-Type": "application/json",
-                "X-Api-Key": self.api_key,
             }
         )
+        self._use_key(0)
+
+    def _use_key(self, idx: int) -> None:
+        self._key_idx = idx
+        self.key_name, self.api_key = self.api_keys[idx]
+        self.session.headers["X-Api-Key"] = self.api_key
+
+    def _post(self, path: str, **kwargs: Any) -> requests.Response:
+        """POST, failing over to the next configured key when the current
+        account is out of credits. Nothing is charged on a credit failure, so
+        retrying the same request on the fallback key is safe."""
+        while True:
+            r = self.session.post(f"{APOLLO_BASE}/{path}", **kwargs)
+            if not _out_of_credits(r) or self._key_idx + 1 >= len(self.api_keys):
+                return r
+            prev = self.key_name
+            self._use_key(self._key_idx + 1)
+            log.warning("Apollo key %s is out of credits (%s); switching to %s",
+                        prev, r.status_code, self.key_name)
 
     def search_people(self, params: dict[str, Any]) -> list[dict[str, Any]]:
         # People Search API (api_search): filters go in the query string; list
@@ -77,7 +114,7 @@ class ApolloClient:
                 query[f"{k}[]"] = list(v)
             else:
                 query[k] = v
-        r = self.session.post(f"{APOLLO_BASE}/mixed_people/api_search", params=query, timeout=30)
+        r = self._post("mixed_people/api_search", params=query, timeout=30)
         r.raise_for_status()
         return r.json().get("people", [])
 
@@ -104,7 +141,7 @@ class ApolloClient:
                     "organization_name": (p.get("organization") or {}).get("name"),
                 })
         payload = {"reveal_personal_emails": reveal_personal_emails, "details": details}
-        r = self.session.post(f"{APOLLO_BASE}/people/bulk_match", json=payload, timeout=60)
+        r = self._post("people/bulk_match", json=payload, timeout=60)
         if r.status_code != 200:
             log.warning("Apollo bulk_match failed (%s): %s", r.status_code, r.text[:300])
             return [None] * len(people)

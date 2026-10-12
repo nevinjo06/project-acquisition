@@ -48,7 +48,7 @@ from .past_projects import PastProjectIndex
 from .scoring import Scorer
 from .sheets import SheetClient
 from .sourcing.apollo import (
-    ApolloClient, Candidate, bulk_reveal, candidate_from_contact, load_profiles,
+    ApolloClient, Candidate, bulk_reveal, candidate_from_contact, configured_api_keys, load_profiles,
     enterprise_profiles, pick_profiles_for_today, search_fresh_candidates,
 )
 from .sourcing.enterprise import enterprise_candidates
@@ -280,7 +280,7 @@ def cmd_prepare(dry_run: bool, force: bool = False) -> int:
     #    Apollo enrichment to reveal the email — these come from the pasted Alumni
     #    tab (looked up by name+company / LinkedIn) and from Apollo discovery. We
     #    only spend a credit on the ones we actually select (step 3).
-    apollo: ApolloClient | None = ApolloClient() if (not dry_run and os.environ.get("APOLLO_API_KEY")) else None
+    apollo: ApolloClient | None = ApolloClient() if (not dry_run and configured_api_keys()) else None
     sheet_leads: list[Lead] = []
     candidates: list[Candidate] = []
     profiles_used: list[str] = []  # today's Apollo discovery profiles, for the Runs log

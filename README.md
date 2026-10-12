@@ -281,6 +281,9 @@ reveal an email; enrichment spends credits. Reveals happen near selection, with
 a budget of twice `DAILY_PREPARE_TARGET`, so failed lookups and exclusions can
 make credit use exceed the final number of drafts.
 
+If `APOLLO2_API_KEY` is also set, the client switches to it for the rest of the
+run once `APOLLO_API_KEY` returns "insufficient credits".
+
 Apollo does not identify UIUC alumni by school. See [Who we email](#who-we-email)
 and [config/search_profiles.yaml](config/search_profiles.yaml) for targeting.
 Without an Apollo key, preparation uses Sheet sources with existing emails;
@@ -419,6 +422,7 @@ changed by this documentation update.
 | Secret | Purpose / example |
 |---|---|
 | `APOLLO_API_KEY` | Organization's Apollo key |
+| `APOLLO2_API_KEY` | Optional fallback Apollo key, used once the first is out of credits |
 | `GEMINI_API_KEY` | Organization's Gemini key |
 | `GOOGLE_SERVICE_ACCOUNT_JSON` | Service-account JSON for Sheets |
 | `SHEET_ID` | Outreach workbook ID |

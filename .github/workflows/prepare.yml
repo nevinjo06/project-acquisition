@@ -31,6 +31,8 @@ jobs:
     timeout-minutes: 45
     env:
       APOLLO_API_KEY: ${{ secrets.APOLLO_API_KEY }}
+      # Fallback account, used once APOLLO_API_KEY runs out of credits.
+      APOLLO2_API_KEY: ${{ secrets.APOLLO2_API_KEY }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       # Which Gemini model writes the emails. A repository variable, not a
       # secret: it is not a credential, and Google retires models, so swapping
