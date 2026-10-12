@@ -60,6 +60,21 @@ def test_template_uses_term_from_yaml(monkeypatch, tmp_path):
 
     import src.templates as templates
 
-    importlib.reload(templates)
+    try:
+        importlib.reload(templates)
+        assert templates.TARGET_TERM == "Fall 2027"
+    finally:
+        # Restore the real config so later tests see the module-level default.
+        monkeypatch.undo()
+        importlib.reload(templates)
 
-    assert templates.TARGET_TERM == "Fall 2027"
+
+def test_metrics_campaign_window_uses_yaml(monkeypatch, tmp_path):
+    path = _write_config(tmp_path, target_term="Fall 2027", campaign_start="2027-01-05")
+    monkeypatch.setattr(campaign, "CONFIG_PATH", path)
+    monkeypatch.delenv("TARGET_TERM", raising=False)
+    monkeypatch.delenv("CAMPAIGN_START", raising=False)
+
+    from src import metrics
+
+    assert metrics.campaign_window() == ("Fall 2027", "2027-01-05")

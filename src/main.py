@@ -79,7 +79,7 @@ def _alumni_share() -> float:
     """Fraction of each day's batch reserved for UIUC alumni (rest is discovery).
 
     Default 0.35: alumni still convert best, but the whole point of the Spring
-    2027 push is breadth — founders, Chicago businesses and big companies. Set ALUMNI_TARGET_SHARE to retune without a code change.
+    2027 push is breadth — founders, Chicago businesses and big companies. Retune via alumni_target_share in config/campaign.yaml.
     """
     return alumni_target_share()
 

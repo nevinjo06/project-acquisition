@@ -30,6 +30,7 @@ from __future__ import annotations
 import re
 from collections import Counter
 from datetime import date, datetime, timedelta, timezone
+
 from .campaign import alumni_target_share, campaign_start, target_term
 from .models import LeadStatus
 from .sheets import _truthy
@@ -101,10 +102,7 @@ def campaign_window() -> tuple[str, str]:
     dashboard show "how is Spring 2027 going" instead of an all-time average that
     the old cycle dominates.
     """
-   return (
-    target_term(),
-    campaign_start(),
-)
+    return (target_term(), campaign_start())
 
 
 def _campaign_slice(
