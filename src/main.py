@@ -48,7 +48,7 @@ from .past_projects import PastProjectIndex
 from .scoring import Scorer
 from .sheets import SheetClient
 from .sourcing.apollo import (
-    ApolloClient, Candidate, bulk_reveal, candidate_from_contact, configured_api_keys, load_profiles,
+    ApolloClient, ApolloRevealError, Candidate, bulk_reveal, candidate_from_contact, configured_api_keys, load_profiles,
     enterprise_profiles, pick_profiles_for_today, search_fresh_candidates,
 )
 from .sourcing.enterprise import enterprise_candidates
@@ -149,6 +149,9 @@ class _Selector:
         self.reveals_found = 0
         self.alumni_attempted = 0
         self.alumni_found = 0
+        # Set once an Apollo lookup fails outright (plan, credits on every key):
+        # no further lookups this run, but already-known leads can still be taken.
+        self.reveal_failed = False
         self._cursors: dict[int, int] = {}
 
     def take(self, queue: list, slots: int) -> list[Lead]:
@@ -214,9 +217,17 @@ class _Selector:
             if key:
                 batch_seen.add(key)
             to_reveal.append(it)
-        if not to_reveal or self.apollo is None:
+        if not to_reveal or self.apollo is None or self.reveal_failed:
             return
-        for cand, lead in zip(to_reveal, bulk_reveal(self.apollo, to_reveal)):
+        try:
+            results = bulk_reveal(self.apollo, to_reveal)
+        except ApolloRevealError as exc:
+            # Leave the unresolved people alone: marking them NOT_FOUND would
+            # skip them forever over what was an account problem, not a miss.
+            log.error("Apollo email lookup failed; no more lookups this run: %s", exc)
+            self.reveal_failed = True
+            results = exc.done
+        for cand, lead in zip(to_reveal, results):
             self.revealed[id(cand)] = lead
             self.reveals_found += 1 if lead else 0
             # Cache the lookup back to the Alumni tab so we never re-spend a
@@ -230,7 +241,7 @@ class _Selector:
                     )
                 except Exception as exc:
                     log.warning("Alumni write-back failed for row %s: %s", cand.ref, exc)
-        self.reveals += len(to_reveal)
+        self.reveals += len(results)
 
 
 # ---------------- prepare ----------------
