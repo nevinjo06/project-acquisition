@@ -12,7 +12,6 @@ edit only the salutation, the credibility line, and the industry mention.
 from __future__ import annotations
 
 import logging
-import os
 from datetime import datetime, timezone
 from typing import Iterable
 

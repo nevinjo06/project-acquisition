@@ -34,7 +34,6 @@ from __future__ import annotations
 import argparse
 import itertools
 import logging
-import os
 import sys
 from datetime import datetime, timezone
 

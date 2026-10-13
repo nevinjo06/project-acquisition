@@ -12,7 +12,6 @@ Placeholders:
 """
 from __future__ import annotations
 
-import os
 
 from .campaign import target_term
 from .env import env_str
