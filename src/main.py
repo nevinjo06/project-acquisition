@@ -59,7 +59,7 @@ from .template import TemplateRouter
 from .companies import CompanyRegistry, email_domain, normalize_company
 from .env import env_flag, env_float, env_int, env_str
 from .campaign import alumni_target_share, enterprise_target_share
-from .schedule import describe_send_window, in_send_window
+from .schedule import blackout_reason, describe_send_window, in_send_window, now_ct
 from .templates import unsubscribe_mailto
 
 logging.basicConfig(
@@ -286,6 +286,16 @@ class _Selector:
 # ---------------- prepare ----------------
 
 def cmd_prepare(dry_run: bool, force: bool = False) -> int:
+    if not dry_run and not force:
+        today = now_ct().date()
+        reason = blackout_reason(today)
+        if reason is not None:
+            log.info(
+                "Blackout on %s (%s) — nothing to prepare. Use --force to prepare now.",
+                today, reason,
+            )
+            return 0
+
     # CAN-SPAM: every email needs a real postal address, and it deliberately has
     # no code default (the repo is public). Stop before spending Apollo credits.
     if not dry_run and not org_address_configured():
@@ -627,12 +637,16 @@ def _refresh_dashboard(sheets: SheetClient) -> None:
 def cmd_send(dry_run: bool, force: bool = False) -> int:
     # GitHub's cron runs hours late, so the workflow fires at several slots
     # (and right after prepare); only runs inside business hours send.
-    if not dry_run and not force and not in_send_window():
-        log.info(
-            "Outside the send window (%s) — leaving drafts for a run in business "
-            "hours. Use --force to send now.", describe_send_window(),
-        )
-        return 0
+    if not dry_run and not force:
+        now = now_ct()
+        if not in_send_window(now):
+            reason = blackout_reason(now.date())
+            log.info(
+                "Outside the send window (%s)%s — leaving drafts for a later run. "
+                "Use --force to send now.", describe_send_window(now),
+                f"; blackout reason: {reason}" if reason is not None else "",
+            )
+            return 0
 
     # DAILY_SEND_CAP is per day, not per run, now that send runs several times.
     cap = env_int("DAILY_SEND_CAP", 10)
@@ -809,10 +823,10 @@ def main() -> int:
     sub = parser.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("prepare", help="Source + draft today's outreach batch")
     p.add_argument("--dry-run", action="store_true")
-    p.add_argument("--force", action="store_true", help="Prepare even if today's batch exists")
+    p.add_argument("--force", action="store_true", help="Prepare even on blackout dates or if today's batch exists")
     p = sub.add_parser("send", help="Send approved drafts + check replies + digest")
     p.add_argument("--dry-run", action="store_true")
-    p.add_argument("--force", action="store_true", help="Send even outside business hours")
+    p.add_argument("--force", action="store_true", help="Send even on blackout dates or outside business hours")
     p = sub.add_parser("bootstrap", help="Create Sheet tabs + headers")
     p = sub.add_parser("stats", help="Refresh the Dashboard tab with current metrics")
     p = sub.add_parser("replies", help="Scan the mailbox for replies/bounces (read-only)")
