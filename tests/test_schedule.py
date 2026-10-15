@@ -76,6 +76,7 @@ class TestBlackouts:
         (date(2026, 12, 21), True),  # first day of winter break
         (date(2027, 1, 4), True),    # last day of winter break
         (date(2027, 1, 5), False),   # day after winter break
+        (date(2027, 1, 18), True),   # MLK Day, mid spring campaign
         (date(2026, 10, 6), False),  # normal weekday
     ])
     def test_default_calendar(self, day, blocked):
@@ -137,12 +138,16 @@ class TestDescribeSendWindow:
         (ct(2026, 11, 25, 10), "next blackout: 2026-11-26"),
         (ct(2026, 11, 26, 10), "next blackout: 2026-11-26"),
         (ct(2026, 12, 22, 10), "next blackout: 2026-12-22 (winter break)"),
-        (ct(2027, 1, 5, 10), "no upcoming blackouts configured"),
+        (ct(2027, 1, 5, 10), "next blackout: 2027-01-18"),
     ])
     def test_next_blackout(self, now, expected):
         description = describe_send_window(now)
         assert "Mon-Fri 08:00-16:00 Central, excluding blackout dates" in description
         assert expected in description
+
+    def test_calendar_runs_out(self, blackout_config):
+        blackout_config("dates: [2026-11-26]\n")
+        assert "no upcoming blackouts configured" in describe_send_window(ct(2026, 11, 27, 10))
 
     def test_next_blackout_does_not_depend_on_yaml_order(self, blackout_config):
         blackout_config("dates: [2026-11-27, 2026-11-26]\n")
