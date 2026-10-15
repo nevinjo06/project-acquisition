@@ -644,10 +644,20 @@ def cmd_send(dry_run: bool, force: bool = False) -> int:
     # Guard: never email anyone already contacted (skip duplicate approved drafts),
     # and dedupe within this batch — protects against double-sends.
     already = sheets.get_sent_emails()
+    # Re-check suppression right before mailing: someone may have unsubscribed,
+    # bounced, or been added by hand since `prepare` drafted them.
+    suppressed = {e.strip().lower() for e in sheets.get_suppression_emails()}
     queue: list = []
     seen: set[str] = set()
+    skipped_suppressed = 0
     for row_idx, draft in approved:
-        el = draft.lead_email.lower()
+        el = draft.lead_email.strip().lower()
+        # Applies to follow-ups too — an unsubscribe always wins.
+        if el in suppressed:
+            log.info("Skipping %s: on the suppression list", draft.lead_email)
+            sheets.mark_draft_error(row_idx, "skipped: suppressed")
+            skipped_suppressed += 1
+            continue
         # Follow-ups are intentionally to already-contacted leads — let them through.
         if not draft.is_follow_up and (el in already or el in seen):
             log.info("Skipping %s: already contacted (duplicate draft)", draft.lead_email)
@@ -656,8 +666,9 @@ def cmd_send(dry_run: bool, force: bool = False) -> int:
         seen.add(el)
         queue.append((row_idx, draft))
     log.info(
-        "%d approved; %d to send after dedupe (daily cap %d, %d already sent today)",
-        len(approved), len(queue), cap, sent_today,
+        "%d approved; %d skipped as suppressed; %d to send after dedupe "
+        "(daily cap %d, %d already sent today)",
+        len(approved), skipped_suppressed, len(queue), cap, sent_today,
     )
 
     from .gmail_send import GmailSender
