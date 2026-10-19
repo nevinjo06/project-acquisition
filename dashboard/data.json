@@ -1,19 +1,19 @@
 {
-  "generated_at": "2026-10-12T21:46:25+00:00",
+  "generated_at": "2026-10-19T19:16:14+00:00",
   "campaign": {
     "start": "2026-08-18",
-    "sent": 341,
-    "delivered": 330,
-    "bounced": 11,
+    "sent": 354,
+    "delivered": 342,
+    "bounced": 12,
     "replies": 3,
     "interested": 2,
-    "auto_replies": 9,
-    "reply_rate": 0.00909090909090909,
-    "interested_rate": 0.006060606060606061,
-    "bounce_rate": 0.03225806451612903,
+    "auto_replies": 10,
+    "reply_rate": 0.008771929824561403,
+    "interested_rate": 0.005847953216374269,
+    "bounce_rate": 0.03389830508474576,
     "alumni_sent": 11,
-    "non_alumni_sent": 330,
-    "non_alumni_share": 0.967741935483871,
+    "non_alumni_sent": 343,
+    "non_alumni_share": 0.9689265536723164,
     "by_audience": [
       {
         "label": "UIUC alumni",
@@ -27,13 +27,13 @@
       },
       {
         "label": "Non-alumni",
-        "sent": 330,
-        "delivered": 321,
-        "bounced": 9,
+        "sent": 343,
+        "delivered": 333,
+        "bounced": 10,
         "replies": 2,
         "interested": 1,
-        "reply_rate": 0.006230529595015576,
-        "bounce_rate": 0.02727272727272727
+        "reply_rate": 0.006006006006006006,
+        "bounce_rate": 0.029154518950437316
       }
     ],
     "by_source": [
@@ -62,20 +62,20 @@
         "count": 25
       },
       {
-        "label": "alumni_input",
-        "count": 11
+        "label": "hunter_enterprise",
+        "count": 19
       },
       {
-        "label": "big_tech",
-        "count": 10
+        "label": "alumni_input",
+        "count": 11
       },
       {
         "label": "big_consulting",
         "count": 10
       },
       {
-        "label": "hunter_enterprise",
-        "count": 6
+        "label": "big_tech",
+        "count": 10
       }
     ],
     "daily": [
@@ -173,7 +173,27 @@
       },
       {
         "date": "2026-10-12",
-        "sent": 6
+        "sent": 8
+      },
+      {
+        "date": "2026-10-13",
+        "sent": 2
+      },
+      {
+        "date": "2026-10-14",
+        "sent": 4
+      },
+      {
+        "date": "2026-10-15",
+        "sent": 1
+      },
+      {
+        "date": "2026-10-16",
+        "sent": 2
+      },
+      {
+        "date": "2026-10-19",
+        "sent": 2
       }
     ],
     "name": "Spring 2027",
@@ -181,37 +201,37 @@
   },
   "window": {
     "first_send": "2026-06-21",
-    "last_send": "2026-10-12",
-    "weekdays": 81
+    "last_send": "2026-10-19",
+    "weekdays": 86
   },
   "headline": {
-    "emails_sent": 832,
-    "people_reached": 827,
-    "companies_reached": 740,
-    "leads_sourced": 832,
-    "drafts_written": 1004,
+    "emails_sent": 845,
+    "people_reached": 840,
+    "companies_reached": 753,
+    "leads_sourced": 845,
+    "drafts_written": 1017,
     "follow_ups_sent": 5,
-    "last_7": 69,
-    "prior_7": 48,
-    "last_30": 144,
-    "active_days": 64,
-    "avg_per_active_day": 13.0,
-    "day_coverage": 0.7901234567901234,
-    "alumni_share": 0.5344619105199516
+    "last_7": 11,
+    "prior_7": 71,
+    "last_30": 157,
+    "active_days": 69,
+    "avg_per_active_day": 12.2,
+    "day_coverage": 0.8023255813953488,
+    "alumni_share": 0.5261904761904762
   },
   "reply": {
     "tracked": true,
     "responses": 26,
-    "rate": 0.03363518758085381,
-    "interested": 14,
-    "interested_rate": 0.018111254851228976,
-    "auto_replies": 22,
-    "engaged": 48,
-    "engagement_rate": 0.062095730918499355,
+    "rate": 0.033121019108280254,
+    "interested": 13,
+    "interested_rate": 0.016560509554140127,
+    "auto_replies": 23,
+    "engaged": 49,
+    "engagement_rate": 0.062420382165605096,
     "sentiment": [
       {
         "label": "positive",
-        "count": 14
+        "count": 13
       },
       {
         "label": "neutral",
@@ -234,12 +254,12 @@
       },
       {
         "label": "Non-alumni",
-        "sent": 385,
-        "delivered": 375,
-        "bounced": 10,
+        "sent": 398,
+        "delivered": 387,
+        "bounced": 11,
         "replies": 4,
-        "reply_rate": 0.010666666666666666,
-        "bounce_rate": 0.025974025974025976
+        "reply_rate": 0.0103359173126615,
+        "bounce_rate": 0.02763819095477387
       }
     ],
     "by_source": [
@@ -307,13 +327,13 @@
         "bounce_rate": 0.04
       },
       {
-        "label": "big_tech",
-        "sent": 10,
-        "delivered": 10,
-        "bounced": 0,
+        "label": "hunter_enterprise",
+        "sent": 19,
+        "delivered": 18,
+        "bounced": 1,
         "replies": 0,
         "reply_rate": 0.0,
-        "bounce_rate": 0.0
+        "bounce_rate": 0.05263157894736842
       },
       {
         "label": "big_consulting",
@@ -325,9 +345,9 @@
         "bounce_rate": 0.1
       },
       {
-        "label": "hunter_enterprise",
-        "sent": 6,
-        "delivered": 6,
+        "label": "big_tech",
+        "sent": 10,
+        "delivered": 10,
         "bounced": 0,
         "replies": 0,
         "reply_rate": 0.0,
@@ -345,11 +365,11 @@
     ]
   },
   "deliverability": {
-    "sent": 827,
-    "delivered": 773,
-    "bounced": 54,
-    "bounce_rate": 0.06529625151148731,
-    "delivered_rate": 0.9347037484885127
+    "sent": 840,
+    "delivered": 785,
+    "bounced": 55,
+    "bounce_rate": 0.06547619047619048,
+    "delivered_rate": 0.9345238095238095
   },
   "apollo": {
     "find_rate": 0.2923416789396171,
@@ -374,43 +394,43 @@
       }
     ],
     "alumni_rows": 612,
-    "discovery_leads": 388,
-    "runs_logged": 36,
-    "bounced": 54,
-    "bounce_rate": 0.06529625151148731,
-    "deliverable_rate": 0.9347037484885127,
-    "usable_rate": 0.2732528631442854
+    "discovery_leads": 401,
+    "runs_logged": 43,
+    "bounced": 55,
+    "bounce_rate": 0.06547619047619048,
+    "deliverable_rate": 0.9345238095238095,
+    "usable_rate": 0.2732002594852374
   },
   "funnel": [
     {
       "stage": "Leads sourced",
-      "count": 832,
+      "count": 845,
       "from_prev": null,
       "from_top": 1.0
     },
     {
       "stage": "Emails drafted",
-      "count": 832,
+      "count": 845,
       "from_prev": 1.0,
       "from_top": 1.0
     },
     {
       "stage": "Emails sent",
-      "count": 827,
-      "from_prev": 0.9939903846153846,
-      "from_top": 0.9939903846153846
+      "count": 840,
+      "from_prev": 0.9940828402366864,
+      "from_top": 0.9940828402366864
     },
     {
       "stage": "Delivered",
-      "count": 773,
-      "from_prev": 0.9347037484885127,
-      "from_top": 0.9290865384615384
+      "count": 785,
+      "from_prev": 0.9345238095238095,
+      "from_top": 0.9289940828402367
     },
     {
       "stage": "Replied",
       "count": 26,
-      "from_prev": 0.03363518758085381,
-      "from_top": 0.03125
+      "from_prev": 0.033121019108280254,
+      "from_top": 0.03076923076923077
     }
   ],
   "timeline": {
@@ -520,8 +540,14 @@
       {
         "week_start": "2026-10-12",
         "label": "Oct 12",
-        "sent": 6,
-        "drafted": 6
+        "sent": 17,
+        "drafted": 17
+      },
+      {
+        "week_start": "2026-10-19",
+        "label": "Oct 19",
+        "sent": 2,
+        "drafted": 2
       }
     ],
     "daily": [
@@ -779,13 +805,33 @@
       },
       {
         "date": "2026-10-12",
-        "sent": 6
+        "sent": 8
+      },
+      {
+        "date": "2026-10-13",
+        "sent": 2
+      },
+      {
+        "date": "2026-10-14",
+        "sent": 4
+      },
+      {
+        "date": "2026-10-15",
+        "sent": 1
+      },
+      {
+        "date": "2026-10-16",
+        "sent": 2
+      },
+      {
+        "date": "2026-10-19",
+        "sent": 2
       }
     ]
   },
   "quality": {
-    "approval_rate": 0.9951923076923077,
-    "send_success_rate": 0.9916567342073898,
+    "approval_rate": 0.9952662721893492,
+    "send_success_rate": 0.9917840375586855,
     "failed_sends": 7,
     "skipped_duplicates": 6,
     "errors": [
@@ -801,11 +847,11 @@
     "suppressed": 0
   },
   "companies": {
-    "distinct": 736,
-    "people": 819,
+    "distinct": 749,
+    "people": 832,
     "duplicate_sends": 83,
     "multi_contact": 42,
-    "people_per_company": 1.1127717391304348,
+    "people_per_company": 1.1108144192256342,
     "top": [
       {
         "label": "PwC",
@@ -816,7 +862,7 @@
         "count": 7
       },
       {
-        "label": "United Airlines",
+        "label": "RSM",
         "count": 5
       },
       {
@@ -824,35 +870,35 @@
         "count": 5
       },
       {
+        "label": "United Airlines",
+        "count": 5
+      },
+      {
         "label": "Medline",
         "count": 5
-      },
-      {
-        "label": "RSM US LLP",
-        "count": 5
-      },
-      {
-        "label": "bp",
-        "count": 4
       },
       {
         "label": "Huron",
         "count": 4
       },
       {
-        "label": "HealthScape Advisors",
+        "label": "HealthScape Advisors, a Chartis Company",
         "count": 4
       },
       {
-        "label": "Chicago Trading Company",
+        "label": "bp",
+        "count": 4
+      },
+      {
+        "label": "Northern Trust",
+        "count": 3
+      },
+      {
+        "label": "Northwestern Medicine",
         "count": 3
       },
       {
         "label": "Grainger",
-        "count": 3
-      },
-      {
-        "label": "Capital One",
         "count": 3
       }
     ]
@@ -923,13 +969,13 @@
         "bounce_rate": 0.04
       },
       {
-        "label": "big_tech",
-        "sent": 10,
-        "delivered": 10,
-        "bounced": 0,
+        "label": "hunter_enterprise",
+        "sent": 19,
+        "delivered": 18,
+        "bounced": 1,
         "replies": 0,
         "reply_rate": 0.0,
-        "bounce_rate": 0.0
+        "bounce_rate": 0.05263157894736842
       },
       {
         "label": "big_consulting",
@@ -941,9 +987,9 @@
         "bounce_rate": 0.1
       },
       {
-        "label": "hunter_enterprise",
-        "sent": 6,
-        "delivered": 6,
+        "label": "big_tech",
+        "sent": 10,
+        "delivered": 10,
         "bounced": 0,
         "replies": 0,
         "reply_rate": 0.0,
@@ -962,7 +1008,7 @@
     "templates": [
       {
         "label": "Business",
-        "count": 590
+        "count": 603
       },
       {
         "label": "Technical software",
@@ -1021,11 +1067,11 @@
         "count": 7
       },
       {
-        "label": "United Airlines",
+        "label": "Microsoft",
         "count": 5
       },
       {
-        "label": "Microsoft",
+        "label": "United Airlines",
         "count": 5
       },
       {
@@ -1033,15 +1079,19 @@
         "count": 5
       },
       {
-        "label": "bp",
-        "count": 4
-      },
-      {
         "label": "Huron",
         "count": 4
       },
       {
-        "label": "Chicago Trading Company",
+        "label": "bp",
+        "count": 4
+      },
+      {
+        "label": "Northern Trust",
+        "count": 3
+      },
+      {
+        "label": "Northwestern Medicine",
         "count": 3
       },
       {
@@ -1049,15 +1099,11 @@
         "count": 3
       },
       {
-        "label": "Capital One",
+        "label": "Chicago Trading Company",
         "count": 3
       },
       {
-        "label": "Northern Trust",
-        "count": 3
-      },
-      {
-        "label": "Starcom",
+        "label": "Goldman Sachs",
         "count": 3
       }
     ]
@@ -1066,8 +1112,8 @@
     "bench_ready": 0,
     "bench_unlooked": 4,
     "projected_contacts": 1,
-    "daily_pace": 6.5,
-    "business_days_left": 0.2,
+    "daily_pace": 7.1,
+    "business_days_left": 0.1,
     "awaiting_approval": 4,
     "approved_unsent": 1,
     "stale_follow_up_drafts": 167
